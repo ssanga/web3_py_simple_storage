@@ -15,8 +15,9 @@ contract SimpleStorage {
 
     //People public person = People({favoriteNumber:2, name:"Santi"});
 
-    function store(uint256 _favoriteNumber) public {
+    function store(uint256 _favoriteNumber) public returns(uint256) {
         favoriteNumber = _favoriteNumber;
+        return _favoriteNumber;
     }
 
     //view, pure. Does not make a transaction
