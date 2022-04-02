@@ -38,19 +38,27 @@ abi = compiled_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["abi"]
 
 
 # for connecting to local blockchain ganache
-w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:7545"))
-chain_id = 5777
-my_address ="0xA387114ECA42FE5bF6e7941ea474a4aB2539b32F"
+# local
+# w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:7545"))
+# chain_id = 5777
+# my_address ="0xA387114ECA42FE5bF6e7941ea474a4aB2539b32F"
 # private_key = "0x11c5194b00bf683ec510f73ce164e74f7a03285fc99e53c97bcb8d059fd8e4d0"
-private_key = os.getenv("PRIVATE_KEY")
+# private_key = os.getenv("PRIVATE_KEY")
+
+# for connecting to rinkedby blockchain
+w3 = Web3(Web3.HTTPProvider("https://rinkeby.infura.io/v3/08a83477e5ad4316bb5e00b20cafea97"))
+chain_id = 4
+# metamask from edge
+my_address ="0x4F0E7c8dF76439e0d28fd3126aA1C75662413Da1"
+private_key = os.getenv("PRIVATE_KEY_METAMASK")
 
 # Create the contract in python
 SimpleStorage = w3.eth.contract(abi=abi, bytecode=bytecode)
-print(SimpleStorage)
+#print(SimpleStorage)
 
 # Get the latest transaction
 nonce = w3.eth.getTransactionCount(my_address)
-print(nonce)
+#print(nonce)
 
 # 1. Build a transaction
 transaction = SimpleStorage.constructor().buildTransaction(
@@ -64,8 +72,10 @@ signed_transaction = w3.eth.account.sign_transaction(transaction, private_key)
 # print(signed_transaction)
 
 # 3. Send the transaction
+print("Deploying contract...")
 transation_hash = w3.eth.sendRawTransaction(signed_transaction.rawTransaction)
 transaction_receipt = w3.eth.wait_for_transaction_receipt(transation_hash)
+print("Deployed!")
 
 # Working with the contract
 # Contract Address
@@ -77,11 +87,18 @@ simple_storage = w3.eth.contract(address=transaction_receipt.contractAddress, ab
 # Initial value of favorite number
 print(simple_storage.functions.retrieve().call())
 # print(simple_storage.functions.store(15).call())
+
+# Create the transaction
+print("Updating contract...")
 store_transaction = simple_storage.functions.store(15).buildTransaction(
     {"from": my_address, "nonce": nonce + 1, "gasPrice": w3.eth.gas_price}
 )
 
+# Sign the transaction
 signed_store_tx = w3.eth.account.sign_transaction(store_transaction, private_key)
 send_store_tx = w3.eth.sendRawTransaction(signed_store_tx.rawTransaction)
+
+# Send the transaction
 tx_receipt = w3.eth.wait_for_transaction_receipt(send_store_tx)
+print("Updated!")
 print(simple_storage.functions.retrieve().call())
