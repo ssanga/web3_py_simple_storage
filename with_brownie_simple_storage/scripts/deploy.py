@@ -1,8 +1,9 @@
 import os
-from brownie import accounts, config, SimpleStorage
+from brownie import accounts, config, SimpleStorage, network
 
 def deploy_simple_storage():
-    account = accounts[0]
+    # account = accounts[0]
+    account = get_account()
     print(account)
     
     # account = accounts.load("freecodecamp-account")
@@ -22,6 +23,12 @@ def deploy_simple_storage():
     transaction.wait(1)
     updated_value = simple_storage.retrieve()
     print(f"Stored Value: {updated_value}")
+
+def get_account():
+    if(network.show_active() == "development"):
+        return accounts[0]
+    else:
+        return accounts.add(config["wallets"]["from_key"])
 
 def main():
     deploy_simple_storage()
